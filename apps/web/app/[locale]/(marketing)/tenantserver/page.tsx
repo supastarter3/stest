@@ -1,5 +1,5 @@
 import { createApiCaller } from "api/trpc/caller";
-import BaseComponent from "./components/BaseComponent";
+
 
 export default async function Tenant() {
     const apiCaller = await createApiCaller();
