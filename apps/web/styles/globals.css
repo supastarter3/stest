@@ -1,0 +1,19 @@
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

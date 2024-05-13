@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "@lucia-auth/adapter-prisma": "^3.0.1",
+    "@lucia-auth/oauth": "^3.5.2",
+    "database": "workspace:*",
+    "lucia": "^2.7.6",
+    "mail": "workspace:*",
+    "utils": "workspace:*",
+    "zod": "^3.22.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "18.2.48",
+    "eslint-config-custom": "workspace:*",
+    "tsconfig": "workspace:*"
+  },
+  "license": "MIT",
+  "main": "./index.tsx",
+  "name": "auth",
+  "scripts": {
+    "lint": "eslint \"**/*.ts*\""
+  },
+  "types": "./**/.tsx",
+  "version": "0.0.0"
+}
