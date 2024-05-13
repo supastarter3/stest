@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://neondb_owner:AhMbSQ8uGD5I@ep-old-river-a6bnrg4w.us-west-2.aws.neon.tech/glowing-hedgehog-66_db_5312885?sslmode=require"
 }
 
 generator client {
@@ -140,4 +140,388 @@ model Subscription {
   plan_id           String
   variant_id        String
   next_payment_date DateTime?
+}
+
+model Org {
+  org_id              Int      @id @default(autoincrement())
+  org_name            String
+  org_address         String
+  org_contact_number  String
+  status              String
+  Department          Department[]
+  Role                Role[]
+  Permission          Permission[]
+  RoleMapping         RoleMapping[]
+  RolePermissionMapping  RolePermissionMapping[]
+  Designation         Designation[]
+  Employee            Employee[]
+  LeavePolicy         LeavePolicy[]
+  LeaveApplied        LeaveApplied[]
+  AssetCategory       AssetCategory[]
+  AssetRequest        AssetRequest[]
+  @@unique([org_name])
+  @@unique([org_contact_number])
+}
+
+model Department {
+  department_id Int      @id @default(autoincrement())
+  department_name String
+  department_desc String
+  department_head String
+  status          String
+  chg_dt         DateTime  @default(now())
+  chg_usr        String    
+  org_id         Int
+  org            Org @relation(fields: [org_id], references: [org_id])
+  Employee       Employee[]
+
+  @@unique([department_name])
+}
+
+model Role {
+  role_id Int      @id @default(autoincrement())
+  role_name    String
+  role_desc    String          
+  actv_flg     Boolean
+  chg_dt       DateTime  @default(now())
+  chg_usr      String
+  org_id       Int 
+  org          Org @relation(fields: [org_id], references: [org_id])
+  RoleMapping  RoleMapping[]
+  RolePermissionMapping RolePermissionMapping[]
+  UiPermission UiPermission[]
+  SidebarData SidebarData[]
+}
+
+model UiPermission {
+  ui_permission_id Int   @id @default(autoincrement())
+  role_id            Int
+  page_name          String
+  role               Role @relation(fields:[role_id], references:[role_id])
+}
+
+model Permission {
+  permission_id   Int   @id @default(autoincrement())
+  permission_name    String
+  permission_desc    String
+  org_id             Int 
+  org                Org @relation(fields: [org_id], references: [org_id])
+}
+
+model RoleMapping {
+  id           Int   @id @default(autoincrement())
+  azure_role_name    String
+  role_id            Int
+  role               Role @relation(fields:[role_id], references:[role_id])
+  org_id             Int 
+  org                Org @relation(fields: [org_id], references: [org_id])
+}
+
+model Operation {
+  operation_id Int   @id @default(autoincrement())
+  operation_type     String
+  operation_desc     String
+  RolePermissionMapping RolePermissionMapping[]
+}
+
+model RolePermissionMapping {
+  id           Int   @id @default(autoincrement())
+  role_id            Int
+  role               Role @relation(fields:[role_id], references:[role_id])
+  table_name         String
+  operation_id       Int
+  operation          Operation @relation(fields: [operation_id] , references :[operation_id])
+  org_id             Int 
+  org                Org @relation(fields: [org_id], references: [org_id])
+}
+
+model Designation {
+  designation_id   Int      @id @default(autoincrement())
+  designation_name String
+  designation_desc String
+  status          String
+  chg_dt           DateTime  @default(now())
+  chg_usr          String    
+  org_id           Int
+  org              Org @relation(fields: [org_id], references: [org_id])
+  Employee         Employee[]
+
+  @@unique([designation_name])
+}
+
+model Employee {
+  employee_id Int      @id @default(autoincrement())
+  first_name String
+  middle_name String
+  last_name String
+  gender String
+  designation_id Int
+  designation Designation @relation(fields:[designation_id], references: [designation_id])
+  department_id Int
+  department Department @relation(fields:[department_id], references: [department_id])
+  employee_type String
+  total_exp Int
+  azure_id String
+  employee_no String  
+  status String
+  reporting_manager String
+  date_of_joining DateTime
+  chg_dt DateTime  @default(now())
+  chg_usr String
+  org_id           Int
+  org              Org @relation(fields: [org_id], references: [org_id])
+  EmployeePersonalDetails EmployeePersonalDetails[]
+  EmployeeAddress EmployeeAddress[]
+  EmployeeIdentificationRecord EmployeeIdentificationRecord[]
+  EmployeeEmergencyContact EmployeeEmergencyContact[]
+  EmployeePastEmployment EmployeePastEmployment[]
+  EmployeeEducationProof EmployeeEducationProof[]
+  LeaveApplied      LeaveApplied[]  @relation("applied_by")
+  LeaveApproved     LeaveApplied[]  @relation("approved_by")
+  AssetRequestApplied      AssetRequest[]  @relation("reporting_manager")
+  AssetRequestApproved      AssetRequest[]  @relation("user_id")
+  AssetUserMapping       AssetUserMapping[] @relation("user_id")
+}
+
+model EmployeePersonalDetails {
+  employee_personal_details_id Int      @id @default(autoincrement())
+  employee_id Int
+  employee Employee @relation(fields: [employee_id], references: [employee_id])
+  date_of_birth DateTime
+  marital_status String
+  contact_number BigInt
+  alternate_contact_number BigInt
+  personal_email String
+  official_email String
+  blood_group String
+  chg_dt DateTime  @default(now())
+  chg_usr String
+}
+
+model EmployeeAddress {
+  employee_address_id Int      @id @default(autoincrement())
+  employee_address_type String
+  address_1 String
+  address_2 String
+  address_3 String
+  address_4 String
+  city_id String
+  country_id String
+  zipcode Int
+  employee_id Int
+  employee Employee @relation(fields: [employee_id], references: [employee_id])
+  chg_dt DateTime  @default(now())
+  chg_usr String
+}
+
+model EmployeeIdentificationRecord {
+  employee_identification_document_id Int      @id @default(autoincrement())
+  document_name String 
+  document_no String
+  document_expiry_date DateTime
+  document_path String 
+  employee_id Int
+  employee Employee @relation(fields: [employee_id], references: [employee_id])
+  chg_dt DateTime  @default(now())
+  chg_usr String
+}
+
+model EmployeeEmergencyContact {
+  employee_emergency_contact_id Int      @id @default(autoincrement())
+  emergency_contact_number BigInt
+  relation_to_employee String
+  employee_id Int
+  employee Employee @relation(fields: [employee_id], references: [employee_id])
+  chg_dt DateTime  @default(now())
+  chg_usr String
+}
+
+model EmployeePastEmployment {
+  employee_past_employment_id Int      @id @default(autoincrement())
+  employer_name String
+  employer_contact_number Int
+  employee_title String
+  employer_office_location String
+  joining_date DateTime
+  relieving_date DateTime
+  offer_letter String
+  relieving_letter String
+  pay_slips String
+  employee_id Int
+  employee Employee @relation(fields: [employee_id], references: [employee_id])
+  chg_dt DateTime  @default(now())
+  chg_usr String
+}
+
+model EmployeeEducationProof {
+  employee_education_proof_id Int      @id @default(autoincrement())
+  education_degree String
+  education_center String
+  education_center_address String
+  percentage_obtained Float
+  employee_education_reference String
+  employee_id Int
+  employee Employee @relation(fields: [employee_id], references: [employee_id])
+  chg_dt DateTime  @default(now())
+  chg_usr String
+}
+
+model LeavePolicy {
+  leave_policy_id Int      @id @default(autoincrement())
+  leave_policy_name String
+  leave_policy_code String
+  leave_policy_desc String
+  leave_policy_type String
+  leave_policy_unit String
+  is_include_half_day String
+  leave_beyond_alloted_days String
+  policy_start_date DateTime
+  policy_end_date DateTime
+  status_flag Boolean
+  chg_dt DateTime @default(now())
+  chg_usr String
+  org_id           Int
+  org              Org @relation(fields: [org_id], references: [org_id])
+  LeavePolicyAllotment LeavePolicyAllotment[]
+  LeavePolicyRole LeavePolicyRole[]
+  LeaveApplied LeaveApplied[]
+
+  @@unique([leave_policy_name])
+}
+
+model LeavePolicyAllotment {
+  accrual_id Int      @id @default(autoincrement())
+  year Int
+  allotment_type String
+  refresh_cycle String
+  accrual_mode String
+  accrual_days Int
+  leave_policy_id Int
+  is_leave_allowed_beyond_alloted String
+  leavepolicy LeavePolicy @relation(fields: [leave_policy_id], references: [leave_policy_id])
+  non_accrual_days_alloted Int
+  status_flag Boolean
+  chg_dt DateTime @default(now())
+  chg_usr String
+}
+
+model LeavePolicyRole {
+  id Int      @id @default(autoincrement())
+  azure_role_id String
+  leave_policy_id Int
+  leavepolicy LeavePolicy @relation(fields: [leave_policy_id], references: [leave_policy_id])
+  status_flag Boolean
+  chg_dt DateTime @default(now())
+  chg_usr String
+}
+
+model LeaveApplied {
+  leave_id             Int       @id @default(autoincrement())
+  leave_type           String
+  leave_policy_id Int
+  leavepolicy LeavePolicy @relation(fields: [leave_policy_id], references: [leave_policy_id])
+  from_date            DateTime
+  to_date              DateTime
+  days                 Int
+  leave_reason         String
+  status               String
+  remarks              String
+  applied_on           DateTime   @default(now())
+  status_flag          Boolean
+  chg_dt               DateTime   @default(now())
+  chg_usr              String
+  org_id               Int
+  org                  Org       @relation(fields: [org_id], references: [org_id])
+  applied_by           Int
+  to_be_approved_by    Int
+  appliedBy	           Employee  @relation("applied_by",fields: [applied_by], references: [employee_id])
+  approvedBy	         Employee  @relation("approved_by",fields: [to_be_approved_by], references: [employee_id])
+}
+
+model SidebarData {
+  id                 Int       @id @default(autoincrement())
+  role_id            Int
+  role               Role @relation(fields:[role_id], references:[role_id])
+  data               Json
+}
+
+model AssetCategory {
+  asset_category_id Int       @id @default(autoincrement())
+  asset_category_name String
+  asset_category_desc String
+  asset_category_code String
+  asset_category_type String
+  status String
+  org_id               Int
+  org                  Org       @relation(fields: [org_id], references: [org_id])
+  Asset Asset[]
+  AssetRequest AssetRequest[]
+}
+
+model Asset {
+  asset_id Int                  @id @default(autoincrement())
+  asset_category_id Int
+  assetcategory AssetCategory   @relation(fields: [asset_category_id], references: [asset_category_id])
+  asset_name String
+  asset_status String
+  manufacturer String
+  model String?
+  serial_number String?
+  product_id Int?
+  mac_id String?
+  purchase_date DateTime
+  warranty_expiry_date DateTime
+  license_expiry_date DateTime
+  license_number String?
+  quantity Int?
+  is_active String
+  is_allocated String
+  currently_allocated_to String?
+  last_allocated_on String?
+  expiry_date DateTime?
+  notify_to String?
+  asset_allocation_approval_by String?
+  AssetUserMapping AssetUserMapping[] @relation("asset_id")
+  AssetTracking AssetTracking[] @relation("asset_id")
+}
+
+model AssetRequest {
+  asset_request_id Int @id @default(autoincrement())
+  asset_type_id Int
+  assetcategory AssetCategory@relation(fields: [asset_type_id],references: [asset_category_id])
+  asset_request_type String
+  asset_name String?
+  asset_request_remarks String
+  asset_request_status String
+  type String    
+  reporting_manager Int
+  reportingmanager Employee@relation("reporting_manager",fields: [reporting_manager],references: [employee_id])
+  user_id Int
+  userid Employee@relation("user_id", fields: [user_id],references: [employee_id])
+  asset_id Int?
+  chg_dt DateTime   @default(now())
+  chg_usr String
+  org_id Int
+  org            Org @relation(fields: [org_id], references: [org_id])
+}
+
+model AssetUserMapping {
+  asset_user_id Int @id @default(autoincrement())
+  user_id Int
+  userid Employee@relation("user_id", fields: [user_id],references: [employee_id])
+  asset_id Int
+  assetid Asset@relation("asset_id", fields: [asset_id],references: [asset_id])
+  asset_request_id Int
+  status String?
+  allocated_from DateTime
+  allocated_to DateTime?
+}
+
+model AssetTracking{
+  asset_tracking_id Int @id @default(autoincrement())
+  asset_id  Int
+  desc String
+  chg_usr  String
+  chg_dt  DateTime   @default(now())
+  assetid Asset@relation("asset_id", fields: [asset_id],references: [asset_id])
 }
